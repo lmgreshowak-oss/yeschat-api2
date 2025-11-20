@@ -1,35 +1,32 @@
-
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
+  if (req.method !== "POST") {
+    return res.status(200).json({ reply: "YES Chat™ API is live." });
   }
 
   try {
-    const body = JSON.parse(req.body || "{}");
-    const text = body.text || "";
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const client = new OpenAI(); // uses built-in key if provided by Vercel env
+    const userText = req.body.text || "";
 
-    const run = await client.beta.threads.createAndRun({
-      assistant_id: "asst_kA8SVGnVDwzVRu6uSP2e27PP",
-      thread: {
-        messages: [{ role: "user", content: text }]
-      }
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      assistant_id: "asst_kA8SVGnVDwzVRu6uSP2e27PP",  // <-- YOUR ASSISTANT
+      input: [
+        {
+          role: "user",
+          content: userText
+        }
+      ]
     });
 
-    const thread = await client.beta.threads.get(run.thread_id);
-    const last = thread.messages[thread.messages.length - 1];
-    const reply = last.content[0].text.value;
+    const aiReply =
+      response.output?.[0]?.content?.[0]?.text || "No response received.";
 
-    res.status(200).json({ reply });
-  } catch(err) {
-    console.error("API error:", err);
+    res.status(200).json({ reply: aiReply });
+  } catch (err) {
+    console.error("ERROR:", err);
     res.status(500).json({ reply: "Server Error" });
   }
 }
