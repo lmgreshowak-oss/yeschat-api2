@@ -1,16 +1,13 @@
 import OpenAI from "openai";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(200).json({ reply: "YES Chat™ API is live." });
-  }
-
+// 🚀 NEW VERCEL API ROUTE FORMAT (Edge-Compatible)
+export async function POST(request) {
   try {
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
 
-    const userText = req.body.text || "";
+    const { text = "" } = await request.json();
 
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
@@ -22,28 +19,28 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: userText
+          content: text
         }
       ]
     });
 
-    // 🔥 NEW CORRECT RESPONSE PARSER
-    let aiReply = "No response received.";
+    let reply = "No response received.";
 
     if (
-      response.output &&
-      response.output.length > 0 &&
-      response.output[0].content &&
-      response.output[0].content.length > 0 &&
-      response.output[0].content[0].text
+      response.output?.[0]?.content?.[0]?.text
     ) {
-      aiReply = response.output[0].content[0].text;
+      reply = response.output[0].content[0].text;
     }
 
-    res.status(200).json({ reply: aiReply });
+    return Response.json({ reply });
 
   } catch (err) {
     console.error("YES CHAT API ERROR →", err);
-    res.status(500).json({ reply: "Server Error" });
+    return Response.json({ reply: "Server Error" }, { status: 500 });
   }
+}
+
+// Optional GET (for browser check)
+export async function GET() {
+  return Response.json({ reply: "YES Chat™ API is live." });
 }
