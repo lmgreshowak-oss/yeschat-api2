@@ -1,3 +1,5 @@
+// redeploy trigger
+
 import OpenAI from "openai";
 
 // 🔥 REQUIRED FOR BROWSERS + GHL
