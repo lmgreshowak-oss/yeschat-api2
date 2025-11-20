@@ -1,13 +1,13 @@
 import OpenAI from "openai";
 
-// 🚀 NEW VERCEL API ROUTE FORMAT (Edge-Compatible)
+// ✔ Vercel API Route: POST + GET using Web Fetch API
 export async function POST(request) {
   try {
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
 
-    const { text = "" } = await request.json();
+    const { text = "" } = await request.json(); // <-- required on Vercel
 
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
@@ -24,11 +24,10 @@ export async function POST(request) {
       ]
     });
 
+    // --- SAFE RESPONSE PARSER ---
     let reply = "No response received.";
 
-    if (
-      response.output?.[0]?.content?.[0]?.text
-    ) {
+    if (response.output?.[0]?.content?.[0]?.text) {
       reply = response.output[0].content[0].text;
     }
 
@@ -40,7 +39,7 @@ export async function POST(request) {
   }
 }
 
-// Optional GET (for browser check)
+// ✔ Optional browser GET check (works when you visit the URL)
 export async function GET() {
   return Response.json({ reply: "YES Chat™ API is live." });
 }
