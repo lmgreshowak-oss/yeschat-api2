@@ -10,10 +10,14 @@ export default async function handler(req, res) {
 
     const userText = req.body.text || "";
 
+    // --- Correct Responses API call ---
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
-      assistant_id: "asst_kA8SVGnVDwzVRu6uSP2e27PP",  // <-- YOUR ASSISTANT
       input: [
+        {
+          role: "system",
+          content: "You are YES Chat™, respond with emotional precision."
+        },
         {
           role: "user",
           content: userText
@@ -22,11 +26,13 @@ export default async function handler(req, res) {
     });
 
     const aiReply =
-      response.output?.[0]?.content?.[0]?.text || "No response received.";
+      response.output?.[0]?.content?.[0]?.text ||
+      "No response returned.";
 
-    res.status(200).json({ reply: aiReply });
+    return res.status(200).json({ reply: aiReply });
+
   } catch (err) {
-    console.error("ERROR:", err);
-    res.status(500).json({ reply: "Server Error" });
+    console.error("YES Chat API ERROR:", err);
+    return res.status(500).json({ reply: "Server Error" });
   }
 }
