@@ -12,6 +12,20 @@ export async function OPTIONS() {
   });
 }
 
+// Add a GET so Vercel recognizes the route
+export async function GET() {
+  return new Response(
+    JSON.stringify({ status: "YES Chat™ API online" }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+  );
+}
+
 export async function POST(request) {
   try {
     const client = new OpenAI({
@@ -45,7 +59,10 @@ export async function POST(request) {
     console.error("YESCHAT API ERROR:", err);
     return new Response(
       JSON.stringify({ error: "Server error", details: err.message }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: { "Access-Control-Allow-Origin": "*" }
+      }
     );
   }
 }
