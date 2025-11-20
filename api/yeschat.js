@@ -12,9 +12,9 @@ export default async function handler(req, res) {
 
     const userText = req.body.text || "";
 
-    // --- Correct Responses API call ---
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
+      assistant_id: "asst_kA8SVGnVDwzVRu6uSP2e27PP",
       input: [
         {
           role: "system",
@@ -27,16 +27,23 @@ export default async function handler(req, res) {
       ]
     });
 
-    // Safe extraction of output
-    const aiReply =
-      response.output?.[0]?.content?.[0]?.text ||
-      response.output_text ||
-      "YES Chat™ is awake but returned no content.";
+    // 🔥 NEW CORRECT RESPONSE PARSER
+    let aiReply = "No response received.";
+
+    if (
+      response.output &&
+      response.output.length > 0 &&
+      response.output[0].content &&
+      response.output[0].content.length > 0 &&
+      response.output[0].content[0].text
+    ) {
+      aiReply = response.output[0].content[0].text;
+    }
 
     res.status(200).json({ reply: aiReply });
 
   } catch (err) {
-    console.error("YES CHAT ERROR:", err);
+    console.error("YES CHAT API ERROR →", err);
     res.status(500).json({ reply: "Server Error" });
   }
 }
